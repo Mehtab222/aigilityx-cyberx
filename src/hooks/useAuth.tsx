@@ -4,7 +4,8 @@ import { User, Session } from "@supabase/supabase-js";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
-type AppRole = "admin" | "ciso" | "soc" | "auditor" | null;
+// Includes both legacy roles and new RBAC roles
+type AppRole = "admin" | "ciso" | "soc" | "auditor" | "operational" | "executive" | null;
 
 interface AuthContextType {
   user: User | null;

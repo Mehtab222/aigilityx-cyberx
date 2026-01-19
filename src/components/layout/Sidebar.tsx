@@ -34,23 +34,23 @@ interface NavItem {
   label: string;
   icon: React.ElementType;
   href: string;
-  roles?: ("admin" | "ciso" | "soc" | "auditor")[];
+  roles?: ("admin" | "ciso" | "soc" | "auditor" | "operational" | "executive")[];
 }
 
 const navItems: NavItem[] = [
   { label: "Dashboard", icon: LayoutDashboard, href: "/" },
-  { label: "Operations", icon: Activity, href: "/operations" },
+  { label: "Operations", icon: Activity, href: "/operations", roles: ["admin", "ciso", "soc", "operational"] },
   { label: "Admin", icon: UserCog, href: "/admin", roles: ["admin"] },
-  { label: "Users", icon: Users, href: "/users" },
+  { label: "Users", icon: Users, href: "/users", roles: ["admin", "ciso"] },
   { label: "Agents", icon: Bot, href: "/agents" },
-  { label: "Compliance", icon: FileCheck, href: "/compliance" },
-  { label: "Risks", icon: AlertTriangle, href: "/risks" },
-  { label: "Reports", icon: BarChart3, href: "/reports" },
-  { label: "Digital Twin", icon: Cpu, href: "/simulation" },
-  { label: "Advisors", icon: MessageSquare, href: "/advisors" },
-  { label: "Policies", icon: FileText, href: "/policies" },
-  { label: "Playbooks", icon: BookOpen, href: "/playbooks" },
-  { label: "Settings", icon: Settings, href: "/settings" },
+  { label: "Compliance", icon: FileCheck, href: "/compliance", roles: ["admin", "ciso", "auditor", "executive"] },
+  { label: "Risks", icon: AlertTriangle, href: "/risks", roles: ["admin", "ciso", "auditor", "executive"] },
+  { label: "Reports", icon: BarChart3, href: "/reports", roles: ["admin", "ciso", "auditor", "executive"] },
+  { label: "Digital Twin", icon: Cpu, href: "/simulation", roles: ["admin", "ciso"] },
+  { label: "Advisors", icon: MessageSquare, href: "/advisors", roles: ["admin", "ciso"] },
+  { label: "Policies", icon: FileText, href: "/policies", roles: ["admin", "ciso", "auditor"] },
+  { label: "Playbooks", icon: BookOpen, href: "/playbooks", roles: ["admin", "ciso", "soc", "operational"] },
+  { label: "Settings", icon: Settings, href: "/settings", roles: ["admin"] },
 ];
 
 export function Sidebar() {
@@ -79,9 +79,24 @@ export function Sidebar() {
     switch (role) {
       case "admin": return "critical";
       case "ciso": return "high";
-      case "soc": return "medium";
-      case "auditor": return "low";
+      case "soc": 
+      case "operational": return "medium";
+      case "auditor": 
+      case "executive": return "low";
       default: return "inactive";
+    }
+  };
+
+  // Get display name for role
+  const getRoleDisplayName = () => {
+    switch (role) {
+      case "admin": return "ADMIN";
+      case "ciso": return "CISO";
+      case "soc": return "SOC";
+      case "operational": return "OPERATOR";
+      case "auditor": return "AUDITOR";
+      case "executive": return "EXECUTIVE";
+      default: return "NO ROLE";
     }
   };
 
@@ -171,7 +186,7 @@ export function Sidebar() {
                 {isLoading ? (
                   <Loader2 className="w-3 h-3 animate-spin text-muted-foreground" />
                 ) : role ? (
-                  <StatusBadge status={getRoleBadgeStatus()} label={role.toUpperCase()} />
+                  <StatusBadge status={getRoleBadgeStatus()} label={getRoleDisplayName()} />
                 ) : (
                   <span className="text-xs text-muted-foreground">No role assigned</span>
                 )}
