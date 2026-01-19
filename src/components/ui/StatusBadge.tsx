@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 
-type StatusType = "critical" | "high" | "medium" | "low" | "success" | "info" | "warning";
+type StatusType = "critical" | "high" | "medium" | "low" | "success" | "info" | "warning" | "active" | "inactive" | "pending";
 
 interface StatusBadgeProps {
   status: StatusType;
@@ -17,6 +17,9 @@ const statusLabels: Record<StatusType, string> = {
   success: "Compliant",
   info: "Info",
   warning: "Warning",
+  active: "Active",
+  inactive: "Inactive",
+  pending: "Pending",
 };
 
 export function StatusBadge({

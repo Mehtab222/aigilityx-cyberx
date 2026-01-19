@@ -17,6 +17,8 @@ import {
   ChevronRight,
   LogOut,
   Cpu,
+  UserCog,
+  Bot,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -35,6 +37,9 @@ interface NavItem {
 const navItems: NavItem[] = [
   { label: "Dashboard", icon: LayoutDashboard, href: "/" },
   { label: "Operations", icon: Activity, href: "/operations" },
+  { label: "Admin", icon: UserCog, href: "/admin" },
+  { label: "Users", icon: Users, href: "/users" },
+  { label: "Agents", icon: Bot, href: "/agents" },
   { label: "Compliance", icon: FileCheck, href: "/compliance" },
   { label: "Risks", icon: AlertTriangle, href: "/risks" },
   { label: "Reports", icon: BarChart3, href: "/reports" },
@@ -42,7 +47,6 @@ const navItems: NavItem[] = [
   { label: "Advisors", icon: MessageSquare, href: "/advisors" },
   { label: "Policies", icon: FileText, href: "/policies" },
   { label: "Playbooks", icon: BookOpen, href: "/playbooks" },
-  { label: "Users", icon: Users, href: "/users", roles: ["Admin"] },
   { label: "Settings", icon: Settings, href: "/settings" },
 ];
 
@@ -131,27 +135,44 @@ export function Sidebar() {
           </div>
           {!collapsed && (
             <div className="flex-1 min-w-0 animate-fade-in">
-              <p className="text-sm font-medium text-foreground truncate">
-                John Doe
+              <p className="text-sm font-medium truncate">John Doe</p>
+              <p className="text-xs text-muted-foreground truncate">
+                CISO
               </p>
-              <p className="text-xs text-muted-foreground">CISO</p>
             </div>
           )}
         </div>
+
+        {/* Logout Button */}
+        <Link to="/login">
+          <Button
+            variant="ghost"
+            className={cn(
+              "w-full justify-start text-muted-foreground hover:text-foreground hover:bg-sidebar-accent",
+              collapsed && "justify-center px-2"
+            )}
+          >
+            <LogOut className="w-4 h-4" />
+            {!collapsed && <span className="ml-2 animate-fade-in">Logout</span>}
+          </Button>
+        </Link>
 
         {/* Collapse Toggle */}
         <Button
           variant="ghost"
           size="sm"
           onClick={() => setCollapsed(!collapsed)}
-          className="w-full justify-center text-muted-foreground hover:text-foreground"
+          className={cn(
+            "w-full mt-2 text-muted-foreground hover:text-foreground",
+            collapsed && "justify-center"
+          )}
         >
           {collapsed ? (
             <ChevronRight className="w-4 h-4" />
           ) : (
             <>
-              <ChevronLeft className="w-4 h-4 mr-2" />
-              <span>Collapse</span>
+              <ChevronLeft className="w-4 h-4" />
+              <span className="ml-2">Collapse</span>
             </>
           )}
         </Button>
