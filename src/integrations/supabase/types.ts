@@ -14,39 +14,140 @@ export type Database = {
   }
   public: {
     Tables: {
+      agent_templates: {
+        Row: {
+          allowed_task_categories: string[]
+          created_at: string
+          created_by: string | null
+          data_access_scope: Json
+          description: string | null
+          id: string
+          is_active: boolean
+          max_concurrent_tasks: number
+          name: string
+          permissions: Json
+          type: Database["public"]["Enums"]["agent_type"]
+          updated_at: string
+        }
+        Insert: {
+          allowed_task_categories?: string[]
+          created_at?: string
+          created_by?: string | null
+          data_access_scope?: Json
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          max_concurrent_tasks?: number
+          name: string
+          permissions?: Json
+          type: Database["public"]["Enums"]["agent_type"]
+          updated_at?: string
+        }
+        Update: {
+          allowed_task_categories?: string[]
+          created_at?: string
+          created_by?: string | null
+          data_access_scope?: Json
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          max_concurrent_tasks?: number
+          name?: string
+          permissions?: Json
+          type?: Database["public"]["Enums"]["agent_type"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       agents: {
         Row: {
+          assigned_to: string | null
           config: Json | null
+          constraints: Json | null
           created_at: string
           created_by: string | null
           description: string | null
           id: string
           name: string
+          objectives: Json | null
           status: Database["public"]["Enums"]["agent_status"]
+          template_id: string | null
           type: Database["public"]["Enums"]["agent_type"]
           updated_at: string
         }
         Insert: {
+          assigned_to?: string | null
           config?: Json | null
+          constraints?: Json | null
           created_at?: string
           created_by?: string | null
           description?: string | null
           id?: string
           name: string
+          objectives?: Json | null
           status?: Database["public"]["Enums"]["agent_status"]
+          template_id?: string | null
           type: Database["public"]["Enums"]["agent_type"]
           updated_at?: string
         }
         Update: {
+          assigned_to?: string | null
           config?: Json | null
+          constraints?: Json | null
           created_at?: string
           created_by?: string | null
           description?: string | null
           id?: string
           name?: string
+          objectives?: Json | null
           status?: Database["public"]["Enums"]["agent_status"]
+          template_id?: string | null
           type?: Database["public"]["Enums"]["agent_type"]
           updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agents_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "agent_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      audit_logs: {
+        Row: {
+          action: string
+          created_at: string
+          details: Json | null
+          id: string
+          ip_address: string | null
+          resource_id: string | null
+          resource_type: string
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          ip_address?: string | null
+          resource_id?: string | null
+          resource_type: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          ip_address?: string | null
+          resource_id?: string | null
+          resource_type?: string
+          user_agent?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -80,6 +181,65 @@ export type Database = {
         }
         Relationships: []
       }
+      task_assignments: {
+        Row: {
+          agent_id: string
+          assigned_by: string
+          assigned_to: string
+          category: string
+          completed_at: string | null
+          created_at: string
+          description: string | null
+          due_date: string | null
+          id: string
+          priority: string
+          result: Json | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          agent_id: string
+          assigned_by: string
+          assigned_to: string
+          category: string
+          completed_at?: string | null
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          priority?: string
+          result?: Json | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          agent_id?: string
+          assigned_by?: string
+          assigned_to?: string
+          category?: string
+          completed_at?: string | null
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          priority?: string
+          result?: Json | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_assignments_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -106,6 +266,11 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_assign_tasks: { Args: { _user_id: string }; Returns: boolean }
+      can_create_agents: { Args: { _user_id: string }; Returns: boolean }
+      can_manage_templates: { Args: { _user_id: string }; Returns: boolean }
+      can_view_executive_data: { Args: { _user_id: string }; Returns: boolean }
+      can_view_operations: { Args: { _user_id: string }; Returns: boolean }
       get_user_role: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]
@@ -119,7 +284,9 @@ export type Database = {
       }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
       is_ciso: { Args: { _user_id: string }; Returns: boolean }
+      is_executive: { Args: { _user_id: string }; Returns: boolean }
       is_manager: { Args: { _user_id: string }; Returns: boolean }
+      is_operational: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
       agent_status: "active" | "inactive" | "pending" | "error"
