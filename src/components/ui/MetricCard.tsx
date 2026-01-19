@@ -10,7 +10,7 @@ interface MetricCardProps {
     value: number;
     isPositive: boolean;
   };
-  status?: "critical" | "high" | "medium" | "low" | "success";
+  status?: "critical" | "high" | "medium" | "low" | "success" | "warning" | "active";
   className?: string;
   children?: React.ReactNode;
 }
@@ -58,6 +58,8 @@ export function MetricCard({
               status === "medium" && "bg-medium/10 text-medium",
               status === "low" && "bg-low/10 text-low",
               status === "success" && "bg-success/10 text-success",
+              status === "warning" && "bg-cyber-warning/10 text-cyber-warning",
+              status === "active" && "bg-primary/10 text-primary",
               !status && "bg-primary/10 text-primary"
             )}
           >
