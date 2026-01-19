@@ -41,6 +41,7 @@ const navItems: NavItem[] = [
   { label: "Dashboard", icon: LayoutDashboard, href: "/" },
   { label: "Operations", icon: Activity, href: "/operations", roles: ["admin", "ciso", "soc", "operational"] },
   { label: "Admin", icon: UserCog, href: "/admin", roles: ["admin"] },
+  { label: "User Management", icon: Users, href: "/user-management", roles: ["admin"] },
   { label: "Users", icon: Users, href: "/users", roles: ["admin", "ciso"] },
   { label: "Agents", icon: Bot, href: "/agents" },
   { label: "Compliance", icon: FileCheck, href: "/compliance", roles: ["admin", "ciso", "auditor", "executive"] },
