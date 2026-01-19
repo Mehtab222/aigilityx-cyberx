@@ -124,7 +124,13 @@ export type Database = {
     Enums: {
       agent_status: "active" | "inactive" | "pending" | "error"
       agent_type: "vcompliance" | "vaudit" | "vrisk" | "vgovernance"
-      app_role: "admin" | "ciso" | "soc" | "auditor"
+      app_role:
+        | "admin"
+        | "ciso"
+        | "soc"
+        | "auditor"
+        | "operational"
+        | "executive"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -254,7 +260,7 @@ export const Constants = {
     Enums: {
       agent_status: ["active", "inactive", "pending", "error"],
       agent_type: ["vcompliance", "vaudit", "vrisk", "vgovernance"],
-      app_role: ["admin", "ciso", "soc", "auditor"],
+      app_role: ["admin", "ciso", "soc", "auditor", "operational", "executive"],
     },
   },
 } as const
