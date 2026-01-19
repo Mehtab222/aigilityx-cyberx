@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import {
   LayoutDashboard,
@@ -19,6 +19,7 @@ import {
   Cpu,
   UserCog,
   Bot,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,18 +27,20 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useAuth } from "@/hooks/useAuth";
+import { StatusBadge } from "@/components/ui/StatusBadge";
 
 interface NavItem {
   label: string;
   icon: React.ElementType;
   href: string;
-  roles?: string[];
+  roles?: ("admin" | "ciso" | "soc" | "auditor")[];
 }
 
 const navItems: NavItem[] = [
   { label: "Dashboard", icon: LayoutDashboard, href: "/" },
   { label: "Operations", icon: Activity, href: "/operations" },
-  { label: "Admin", icon: UserCog, href: "/admin" },
+  { label: "Admin", icon: UserCog, href: "/admin", roles: ["admin"] },
   { label: "Users", icon: Users, href: "/users" },
   { label: "Agents", icon: Bot, href: "/agents" },
   { label: "Compliance", icon: FileCheck, href: "/compliance" },
@@ -53,6 +56,34 @@ const navItems: NavItem[] = [
 export function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, role, signOut, isLoading } = useAuth();
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate("/login");
+  };
+
+  // Filter nav items based on role
+  const filteredNavItems = navItems.filter((item) => {
+    if (!item.roles) return true;
+    if (!role) return false;
+    return item.roles.includes(role);
+  });
+
+  // Get user initials from profile
+  const userInitials = user?.email?.slice(0, 2).toUpperCase() || "??";
+  const userEmail = user?.email || "Loading...";
+
+  const getRoleBadgeStatus = () => {
+    switch (role) {
+      case "admin": return "critical";
+      case "ciso": return "high";
+      case "soc": return "medium";
+      case "auditor": return "low";
+      default: return "inactive";
+    }
+  };
 
   return (
     <aside
@@ -81,7 +112,7 @@ export function Sidebar() {
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto py-4 px-3">
         <ul className="space-y-1">
-          {navItems.map((item) => {
+          {filteredNavItems.map((item) => {
             const isActive = location.pathname === item.href;
             const Icon = item.icon;
 
@@ -131,31 +162,36 @@ export function Sidebar() {
           )}
         >
           <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
-            <span className="text-sm font-semibold text-primary">JD</span>
+            <span className="text-sm font-semibold text-primary">{userInitials}</span>
           </div>
           {!collapsed && (
             <div className="flex-1 min-w-0 animate-fade-in">
-              <p className="text-sm font-medium truncate">John Doe</p>
-              <p className="text-xs text-muted-foreground truncate">
-                CISO
-              </p>
+              <p className="text-sm font-medium truncate">{userEmail}</p>
+              <div className="flex items-center gap-2">
+                {isLoading ? (
+                  <Loader2 className="w-3 h-3 animate-spin text-muted-foreground" />
+                ) : role ? (
+                  <StatusBadge status={getRoleBadgeStatus()} label={role.toUpperCase()} />
+                ) : (
+                  <span className="text-xs text-muted-foreground">No role assigned</span>
+                )}
+              </div>
             </div>
           )}
         </div>
 
         {/* Logout Button */}
-        <Link to="/login">
-          <Button
-            variant="ghost"
-            className={cn(
-              "w-full justify-start text-muted-foreground hover:text-foreground hover:bg-sidebar-accent",
-              collapsed && "justify-center px-2"
-            )}
-          >
-            <LogOut className="w-4 h-4" />
-            {!collapsed && <span className="ml-2 animate-fade-in">Logout</span>}
-          </Button>
-        </Link>
+        <Button
+          variant="ghost"
+          onClick={handleLogout}
+          className={cn(
+            "w-full justify-start text-muted-foreground hover:text-foreground hover:bg-sidebar-accent",
+            collapsed && "justify-center px-2"
+          )}
+        >
+          <LogOut className="w-4 h-4" />
+          {!collapsed && <span className="ml-2 animate-fade-in">Logout</span>}
+        </Button>
 
         {/* Collapse Toggle */}
         <Button

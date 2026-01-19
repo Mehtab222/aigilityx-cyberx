@@ -3,6 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MetricCard } from "@/components/ui/MetricCard";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { Button } from "@/components/ui/button";
+import { CreateAgentDialog } from "@/components/agents/CreateAgentDialog";
+import { useAgents } from "@/hooks/useAgents";
 import {
   Users,
   Shield,
@@ -15,6 +17,7 @@ import {
   AlertTriangle,
   CheckCircle,
   Clock,
+  Bot,
 } from "lucide-react";
 
 const systemHealth = [
@@ -32,6 +35,9 @@ const recentUsers = [
 ];
 
 const AdminDashboard = () => {
+  const { agents } = useAgents();
+  const activeAgents = agents.filter(a => a.status === "active").length;
+
   return (
     <DashboardLayout
       title="Administrator Dashboard"
@@ -50,9 +56,9 @@ const AdminDashboard = () => {
           />
           <MetricCard
             title="Active Agents"
-            value={4}
-            subtitle="All operational"
-            icon={Shield}
+            value={`${activeAgents}/${agents.length}`}
+            subtitle={agents.length > 0 ? `${agents.length - activeAgents} inactive` : "No agents yet"}
+            icon={Bot}
             status="success"
           />
           <MetricCard
@@ -150,6 +156,44 @@ const AdminDashboard = () => {
             </CardContent>
           </Card>
         </div>
+
+        {/* Agent Management Section */}
+        <Card className="cyber-card">
+          <CardHeader className="pb-3 flex flex-row items-center justify-between">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Bot className="w-4 h-4 text-primary" />
+              Agent Management
+            </CardTitle>
+            <CreateAgentDialog />
+          </CardHeader>
+          <CardContent>
+            {agents.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <Bot className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                <p className="text-sm">No agents created yet</p>
+                <p className="text-xs">Click "Create Agent" to deploy your first AI agent</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {agents.slice(0, 4).map((agent) => (
+                  <div
+                    key={agent.id}
+                    className="p-4 rounded-lg bg-muted/50 hover:bg-muted/80 transition-colors"
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium">{agent.name}</span>
+                      <StatusBadge
+                        status={agent.status === "active" ? "success" : agent.status === "error" ? "critical" : "inactive"}
+                        label={agent.status}
+                      />
+                    </div>
+                    <p className="text-xs text-muted-foreground capitalize">{agent.type.replace("v", "V")}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Quick Admin Actions */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

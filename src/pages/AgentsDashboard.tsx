@@ -4,6 +4,9 @@ import { MetricCard } from "@/components/ui/MetricCard";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { CreateAgentDialog } from "@/components/agents/CreateAgentDialog";
+import { useAgents, Agent } from "@/hooks/useAgents";
+import { useAuth } from "@/hooks/useAuth";
 import {
   Cpu,
   FileCheck,
@@ -18,89 +21,27 @@ import {
   PauseCircle,
   Zap,
   BarChart3,
+  Loader2,
 } from "lucide-react";
 
-interface AgentCardProps {
-  name: string;
-  description: string;
-  status: "running" | "idle" | "error";
-  tasksCompleted: number;
-  tasksTotal: number;
-  lastRun: string;
-  metrics: { label: string; value: string | number }[];
-  icon: React.ElementType;
-}
+const getAgentIcon = (type: string) => {
+  switch (type) {
+    case "vcompliance": return FileCheck;
+    case "vaudit": return Search;
+    case "vrisk": return AlertTriangle;
+    case "vgovernance": return Shield;
+    default: return Cpu;
+  }
+};
 
-const agents: AgentCardProps[] = [
-  {
-    name: "VCompliance",
-    description: "Continuous compliance monitoring and gap analysis",
-    status: "running",
-    tasksCompleted: 145,
-    tasksTotal: 161,
-    lastRun: "2 min ago",
-    metrics: [
-      { label: "Frameworks Monitored", value: 5 },
-      { label: "Controls Checked", value: 161 },
-      { label: "Gaps Found", value: 12 },
-    ],
-    icon: FileCheck,
-  },
-  {
-    name: "VAudit",
-    description: "Automated audit trail analysis and evidence collection",
-    status: "running",
-    tasksCompleted: 89,
-    tasksTotal: 100,
-    lastRun: "5 min ago",
-    metrics: [
-      { label: "Evidence Items", value: 342 },
-      { label: "Findings", value: 24 },
-      { label: "Auto-remediated", value: 8 },
-    ],
-    icon: Search,
-  },
-  {
-    name: "VRisk",
-    description: "Real-time risk assessment and threat modeling",
-    status: "idle",
-    tasksCompleted: 50,
-    tasksTotal: 50,
-    lastRun: "15 min ago",
-    metrics: [
-      { label: "Risks Assessed", value: 127 },
-      { label: "Critical", value: 3 },
-      { label: "Mitigations", value: 45 },
-    ],
-    icon: AlertTriangle,
-  },
-  {
-    name: "VGovernance",
-    description: "Policy enforcement and governance automation",
-    status: "running",
-    tasksCompleted: 78,
-    tasksTotal: 85,
-    lastRun: "1 min ago",
-    metrics: [
-      { label: "Policies Active", value: 42 },
-      { label: "Violations", value: 7 },
-      { label: "Auto-enforced", value: 35 },
-    ],
-    icon: Shield,
-  },
-];
-
-const recentAgentActivity = [
-  { agent: "VCompliance", action: "Completed ISO 27001 control assessment", time: "2 min ago", result: "success" },
-  { agent: "VAudit", action: "Generated evidence for SOC 2 Type II", time: "5 min ago", result: "success" },
-  { agent: "VGovernance", action: "Enforced password policy on 12 accounts", time: "8 min ago", result: "success" },
-  { agent: "VRisk", action: "Updated threat model for cloud infrastructure", time: "15 min ago", result: "success" },
-  { agent: "VCompliance", action: "Detected PCI-DSS control gap", time: "20 min ago", result: "warning" },
-];
-
-function AgentCard({ agent }: { agent: AgentCardProps }) {
-  const Icon = agent.icon;
-  const progress = Math.round((agent.tasksCompleted / agent.tasksTotal) * 100);
+function AgentCard({ agent, canManage, onToggle, isUpdating }: { 
+  agent: Agent; 
+  canManage: boolean;
+  onToggle: () => void;
+  isUpdating: boolean;
+}) {
+  const Icon = getAgentIcon(agent.type);
+  const progress = agent.status === "active" ? 100 : 0;
 
   return (
     <Card className="cyber-card">
@@ -112,17 +53,19 @@ function AgentCard({ agent }: { agent: AgentCardProps }) {
             </div>
             <div>
               <CardTitle className="text-base">{agent.name}</CardTitle>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                {agent.description}
+              <p className="text-xs text-muted-foreground mt-0.5 capitalize">
+                {agent.type.replace("v", "V")} Agent
               </p>
             </div>
           </div>
           <StatusBadge
             status={
-              agent.status === "running"
-                ? "active"
-                : agent.status === "idle"
+              agent.status === "active"
+                ? "success"
+                : agent.status === "inactive"
                 ? "inactive"
+                : agent.status === "pending"
+                ? "pending"
                 : "critical"
             }
             label={agent.status}
@@ -130,49 +73,50 @@ function AgentCard({ agent }: { agent: AgentCardProps }) {
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
+        {/* Description */}
+        {agent.description && (
+          <p className="text-sm text-muted-foreground">{agent.description}</p>
+        )}
+
         {/* Progress */}
         <div>
           <div className="flex items-center justify-between text-xs mb-2">
-            <span className="text-muted-foreground">Task Progress</span>
+            <span className="text-muted-foreground">Status</span>
             <span className="font-medium">
-              {agent.tasksCompleted}/{agent.tasksTotal}
+              {agent.status === "active" ? "Running" : "Stopped"}
             </span>
           </div>
           <Progress value={progress} className="h-2" />
-        </div>
-
-        {/* Metrics */}
-        <div className="grid grid-cols-3 gap-2">
-          {agent.metrics.map((metric, index) => (
-            <div key={index} className="p-2 rounded-lg bg-muted/50 text-center">
-              <p className="text-lg font-bold text-primary">{metric.value}</p>
-              <p className="text-[10px] text-muted-foreground leading-tight">
-                {metric.label}
-              </p>
-            </div>
-          ))}
         </div>
 
         {/* Actions */}
         <div className="flex items-center justify-between pt-2 border-t border-border">
           <span className="text-xs text-muted-foreground flex items-center gap-1">
             <Clock className="w-3 h-3" />
-            Last run: {agent.lastRun}
+            Created: {new Date(agent.created_at).toLocaleDateString()}
           </span>
-          <div className="flex gap-2">
-            {agent.status === "running" ? (
-              <Button size="sm" variant="ghost" className="h-7 px-2">
-                <PauseCircle className="w-4 h-4" />
+          {canManage && (
+            <div className="flex gap-2">
+              <Button 
+                size="sm" 
+                variant="ghost" 
+                className="h-7 px-2"
+                onClick={onToggle}
+                disabled={isUpdating}
+              >
+                {isUpdating ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : agent.status === "active" ? (
+                  <PauseCircle className="w-4 h-4" />
+                ) : (
+                  <PlayCircle className="w-4 h-4" />
+                )}
               </Button>
-            ) : (
               <Button size="sm" variant="ghost" className="h-7 px-2">
-                <PlayCircle className="w-4 h-4" />
+                <RefreshCw className="w-4 h-4" />
               </Button>
-            )}
-            <Button size="sm" variant="ghost" className="h-7 px-2">
-              <RefreshCw className="w-4 h-4" />
-            </Button>
-          </div>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>
@@ -180,6 +124,11 @@ function AgentCard({ agent }: { agent: AgentCardProps }) {
 }
 
 const AgentsDashboard = () => {
+  const { agents, isLoading, toggleAgentStatus, isUpdating } = useAgents();
+  const { isManager } = useAuth();
+
+  const activeAgents = agents.filter(a => a.status === "active").length;
+
   return (
     <DashboardLayout
       title="Agents Dashboard"
@@ -190,8 +139,8 @@ const AgentsDashboard = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <MetricCard
             title="Active Agents"
-            value="3/4"
-            subtitle="1 idle"
+            value={`${activeAgents}/${agents.length}`}
+            subtitle={agents.length > 0 ? `${agents.length - activeAgents} inactive` : "No agents"}
             icon={Cpu}
             status="success"
           />
@@ -220,12 +169,45 @@ const AgentsDashboard = () => {
           />
         </div>
 
+        {/* Create Agent Button for Managers */}
+        {isManager && (
+          <div className="flex justify-end">
+            <CreateAgentDialog />
+          </div>
+        )}
+
         {/* Agent Cards Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {agents.map((agent) => (
-            <AgentCard key={agent.name} agent={agent} />
-          ))}
-        </div>
+        {isLoading ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          </div>
+        ) : agents.length === 0 ? (
+          <Card className="cyber-card">
+            <CardContent className="py-12 text-center">
+              <Cpu className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50" />
+              <h3 className="text-lg font-medium mb-2">No Agents Deployed</h3>
+              <p className="text-muted-foreground text-sm mb-4">
+                {isManager 
+                  ? "Create your first AI agent to start automating security operations."
+                  : "Contact your administrator or CISO to deploy agents."
+                }
+              </p>
+              {isManager && <CreateAgentDialog />}
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {agents.map((agent) => (
+              <AgentCard 
+                key={agent.id} 
+                agent={agent} 
+                canManage={isManager}
+                onToggle={() => toggleAgentStatus(agent.id, agent.status)}
+                isUpdating={isUpdating}
+              />
+            ))}
+          </div>
+        )}
 
         {/* Recent Agent Activity */}
         <Card className="cyber-card">
@@ -240,29 +222,37 @@ const AgentsDashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              {recentAgentActivity.map((activity, index) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted/80 transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    {activity.result === "success" ? (
-                      <CheckCircle className="w-4 h-4 text-cyber-success" />
-                    ) : (
-                      <AlertTriangle className="w-4 h-4 text-cyber-warning" />
-                    )}
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-semibold text-primary">
-                          {activity.agent}
-                        </span>
-                        <span className="text-sm">{activity.action}</span>
+              {agents.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-4">
+                  No agent activity yet
+                </p>
+              ) : (
+                agents.slice(0, 5).map((agent) => (
+                  <div
+                    key={agent.id}
+                    className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted/80 transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      {agent.status === "active" ? (
+                        <CheckCircle className="w-4 h-4 text-cyber-success" />
+                      ) : (
+                        <AlertTriangle className="w-4 h-4 text-cyber-warning" />
+                      )}
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-semibold text-primary capitalize">
+                            {agent.type.replace("v", "V")}
+                          </span>
+                          <span className="text-sm">{agent.name}</span>
+                        </div>
                       </div>
                     </div>
+                    <span className="text-xs text-muted-foreground">
+                      {new Date(agent.updated_at).toLocaleString()}
+                    </span>
                   </div>
-                  <span className="text-xs text-muted-foreground">{activity.time}</span>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </CardContent>
         </Card>
