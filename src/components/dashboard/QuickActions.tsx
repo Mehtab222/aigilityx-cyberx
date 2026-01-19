@@ -44,10 +44,10 @@ export function QuickActions() {
             <Button
               key={action.label}
               variant={action.variant}
-              className="h-auto py-4 flex flex-col items-center gap-2 text-center"
+              className="h-auto py-4 flex flex-col items-center justify-center gap-2"
             >
               <Icon className="w-5 h-5" />
-              <span className="text-xs text-center w-full">{action.label}</span>
+              <span className="text-xs text-center leading-tight">{action.label}</span>
             </Button>
           );
         })}
