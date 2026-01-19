@@ -28,19 +28,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const isManager = role === "admin" || role === "ciso";
 
-  const fetchUserRole = async (userId: string) => {
+  const fetchUserRole = async (userId: string): Promise<AppRole> => {
     try {
+      console.log("Fetching role for user:", userId);
+      
+      // Use the RPC function which bypasses RLS with security definer
       const { data, error } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", userId)
-        .maybeSingle();
+        .rpc('get_user_role', { _user_id: userId });
 
       if (error) {
-        console.error("Error fetching role:", error);
-        return null;
+        console.error("Error fetching role via RPC:", error);
+        // Fallback to direct query
+        const { data: directData, error: directError } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", userId)
+          .maybeSingle();
+        
+        if (directError) {
+          console.error("Error fetching role directly:", directError);
+          return null;
+        }
+        console.log("Role fetched directly:", directData?.role);
+        return directData?.role as AppRole;
       }
-      return data?.role as AppRole;
+      
+      console.log("Role fetched via RPC:", data);
+      return data as AppRole;
     } catch (err) {
       console.error("Error fetching role:", err);
       return null;
