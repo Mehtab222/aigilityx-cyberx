@@ -35,7 +35,7 @@ const App = () => (
             <Route
               path="/operations"
               element={
-                <ProtectedRoute>
+                <ProtectedRoute requiredRoles={["admin", "ciso", "soc", "operational"]}>
                   <OperationsPage />
                 </ProtectedRoute>
               }
@@ -51,7 +51,7 @@ const App = () => (
             <Route
               path="/users"
               element={
-                <ProtectedRoute>
+                <ProtectedRoute requiredRoles={["admin", "ciso"]}>
                   <UsersDashboard />
                 </ProtectedRoute>
               }
