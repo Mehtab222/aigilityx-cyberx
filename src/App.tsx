@@ -11,6 +11,7 @@ import OperationsPage from "./pages/OperationsPage";
 import AdminDashboard from "./pages/AdminDashboard";
 import UsersDashboard from "./pages/UsersDashboard";
 import AgentsDashboard from "./pages/AgentsDashboard";
+import UserManagement from "./pages/UserManagement";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -61,6 +62,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <AgentsDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/user-management"
+              element={
+                <ProtectedRoute requiredRoles={["admin"]}>
+                  <UserManagement />
                 </ProtectedRoute>
               }
             />
