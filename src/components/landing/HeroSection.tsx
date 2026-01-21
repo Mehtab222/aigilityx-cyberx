@@ -1,21 +1,25 @@
 import { Button } from "@/components/ui/button";
 import { Shield, ArrowRight, Play } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import heroDashboard from "@/assets/cyber-hero.jpg";
+import heroVideo from "@/assets/cyber-hero-video.mp4";
 
 const HeroSection = () => {
   const navigate = useNavigate();
   
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      {/* Background with overlay */}
+      {/* Video Background */}
       <div className="absolute inset-0 z-0">
-        <img
-          src={heroDashboard}
-          alt="CyberX Command Center Dashboard"
-          className="w-full h-full object-cover opacity-30"
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/90 to-background" />
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="w-full h-full object-cover opacity-40"
+        >
+          <source src={heroVideo} type="video/mp4" />
+        </video>
+        <div className="absolute inset-0 bg-gradient-to-b from-background/70 via-background/85 to-background" />
       </div>
 
       {/* Animated grid pattern */}
