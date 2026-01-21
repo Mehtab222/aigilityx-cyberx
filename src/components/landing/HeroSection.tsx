@@ -1,8 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { Shield, ArrowRight, Play } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import heroDashboard from "@/assets/cyber-hero.jpg";
 
 const HeroSection = () => {
+  const navigate = useNavigate();
+  
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background with overlay */}
@@ -49,8 +52,13 @@ const HeroSection = () => {
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
-            <Button size="lg" className="group px-8 py-6 text-lg font-semibold bg-primary text-primary-foreground hover:bg-primary/90 transition-all" style={{ boxShadow: '0 0 30px hsl(var(--primary) / 0.3)' }}>
-              Request Demo
+            <Button 
+              size="lg" 
+              onClick={() => navigate("/login")}
+              className="group px-8 py-6 text-lg font-semibold bg-primary text-primary-foreground hover:bg-primary/90 transition-all" 
+              style={{ boxShadow: '0 0 30px hsl(var(--primary) / 0.3)' }}
+            >
+              Get Started
               <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </Button>
             <Button size="lg" variant="outline" className="px-8 py-6 text-lg font-semibold border-border hover:bg-secondary">
