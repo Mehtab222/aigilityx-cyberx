@@ -1,6 +1,6 @@
 import { 
   Shield, 
-  Brain, 
+  FileSearch, 
   ClipboardCheck, 
   Radar, 
   Globe,
@@ -21,14 +21,14 @@ const modules = [
     color: "hsl(188 95% 50%)"
   },
   {
-    icon: Brain,
-    title: "AdvisorX Strategic Engine",
-    description: "Advanced analysis and planning capabilities supporting compliance, risk management, and resource prioritization.",
+    icon: FileSearch,
+    title: "vAuditor",
+    description: "Provides independent security assessments, control validation, and assurance reporting.",
     features: [
-      "Compliance Gap Analysis",
-      "Threat & Risk Correlation",
-      "Recommendation Generation",
-      "Executive Briefs"
+      "Control Effectiveness Reviews",
+      "Security & Compliance Audits",
+      "Historical Evidence & Log Analysis",
+      "Audit Reports & Executive Summaries"
     ],
     color: "hsl(142 76% 45%)"
   },
