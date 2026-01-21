@@ -1,7 +1,6 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { User, Session } from "@supabase/supabase-js";
-import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 // Includes both legacy roles and new RBAC roles
@@ -61,37 +60,50 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  /**
+   * IMPORTANT (security): getSession() reads from local storage and may be stale.
+   * We validate a session by calling getUser(), which checks the JWT with the backend.
+   */
+  const syncAuthState = async (currentSession: Session | null) => {
+    setSession(currentSession);
+
+    if (!currentSession) {
+      setUser(null);
+      setRole(null);
+      setIsLoading(false);
+      return;
+    }
+
+    const { data: userData, error: userError } = await supabase.auth.getUser();
+    if (userError || !userData.user) {
+      console.warn("Session validation failed; treating as signed out", userError);
+      setSession(null);
+      setUser(null);
+      setRole(null);
+      setIsLoading(false);
+      return;
+    }
+
+    setUser(userData.user);
+    const userRole = await fetchUserRole(userData.user.id);
+    setRole(userRole);
+    setIsLoading(false);
+  };
+
   useEffect(() => {
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, currentSession) => {
-        setSession(currentSession);
-        setUser(currentSession?.user ?? null);
-
-        if (currentSession?.user) {
-          // Defer role fetch to avoid deadlock
-          setTimeout(async () => {
-            const userRole = await fetchUserRole(currentSession.user.id);
-            setRole(userRole);
-            setIsLoading(false);
-          }, 0);
-        } else {
-          setRole(null);
-          setIsLoading(false);
-        }
+        // Any auth event should re-sync state (and validate the session)
+        setIsLoading(true);
+        await syncAuthState(currentSession);
       }
     );
 
     // THEN check for existing session
     supabase.auth.getSession().then(async ({ data: { session: currentSession } }) => {
-      setSession(currentSession);
-      setUser(currentSession?.user ?? null);
-
-      if (currentSession?.user) {
-        const userRole = await fetchUserRole(currentSession.user.id);
-        setRole(userRole);
-      }
-      setIsLoading(false);
+      setIsLoading(true);
+      await syncAuthState(currentSession);
     });
 
     return () => subscription.unsubscribe();
