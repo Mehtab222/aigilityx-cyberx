@@ -22,7 +22,7 @@ const Navbar = () => {
           <a href="#" className="flex items-center gap-2 group">
             <Shield className="w-8 h-8 text-primary transition-all group-hover:drop-shadow-[0_0_10px_hsl(188_95%_50%/0.5)]" />
             <span className="text-xl font-bold tracking-tight">
-              CPX <span className="text-primary">CyberX</span>
+              AIgility X <span className="text-primary">CyberX</span>
             </span>
           </a>
 
