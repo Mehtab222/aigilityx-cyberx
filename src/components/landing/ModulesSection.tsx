@@ -3,7 +3,7 @@ import {
   FileSearch, 
   ClipboardCheck, 
   Radar, 
-  Globe,
+  ShieldAlert,
   ArrowRight 
 } from "lucide-react";
 
@@ -57,14 +57,14 @@ const modules = [
     color: "hsl(43 96% 56%)"
   },
   {
-    icon: Globe,
-    title: "Threat Intelligence",
-    description: "Aggregates external threat intelligence and presents actionable insights to the SOC and strategic modules.",
+    icon: ShieldAlert,
+    title: "vRisk Manager",
+    description: "Identifies, analyzes, and prioritizes cyber risks to support informed business decisions.",
     features: [
-      "Feed Aggregation",
-      "Relevance Scoring",
-      "Actionable Guidance",
-      "Historical Context"
+      "Enterprise Risk Identification",
+      "Threat & Risk Correlation",
+      "Risk Impact & Likelihood Analysis",
+      "Mitigation Recommendations & Tracking"
     ],
     color: "hsl(0 84% 60%)"
   }
