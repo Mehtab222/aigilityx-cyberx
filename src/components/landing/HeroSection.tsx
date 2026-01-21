@@ -34,7 +34,7 @@ const HeroSection = () => {
 
           {/* Main headline */}
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6">
-            <span className="text-foreground">CPX </span>
+            <span className="text-foreground">AIgility X </span>
             <span className="text-primary" style={{ textShadow: '0 0 30px hsl(var(--primary) / 0.5)' }}>CyberX</span>
             <br />
             <span className="text-foreground">Agentic AI Platform</span>
