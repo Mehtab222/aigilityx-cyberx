@@ -11,7 +11,7 @@ const Footer = () => {
           <a href="#" className="flex items-center gap-2">
             <Shield className="w-6 h-6 text-primary" />
             <span className="text-lg font-bold tracking-tight">
-              CPX <span className="text-primary">CyberX</span>
+              AIgility X <span className="text-primary">CyberX</span>
             </span>
           </a>
 
