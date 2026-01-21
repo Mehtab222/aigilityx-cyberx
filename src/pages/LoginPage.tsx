@@ -19,7 +19,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (user) {
-      navigate("/");
+      navigate("/dashboard");
     }
   }, [user, navigate]);
 
@@ -28,7 +28,7 @@ export default function LoginPage() {
     setIsSubmitting(true);
     try {
       await signIn(email, password);
-      navigate("/");
+      navigate("/dashboard");
     } catch {
       // Error handled in signIn
     } finally {
