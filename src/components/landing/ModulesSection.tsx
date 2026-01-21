@@ -1,7 +1,7 @@
 import { 
   Shield, 
   Brain, 
-  MessageSquare, 
+  ClipboardCheck, 
   Radar, 
   Globe,
   ArrowRight 
@@ -33,14 +33,14 @@ const modules = [
     color: "hsl(142 76% 45%)"
   },
   {
-    icon: MessageSquare,
-    title: "ConversX Chat Interface",
-    description: "Natural language layer enabling users to query data, request reports, and execute actions through conversation.",
+    icon: ClipboardCheck,
+    title: "vCompliance Manager",
+    description: "Ensures organizational alignment with regulatory frameworks and internal security standards.",
     features: [
-      "Intent Recognition",
-      "Role-Based Responses",
-      "Command Execution",
-      "Alert Notifications"
+      "Compliance Gap Assessment",
+      "Regulatory Mapping (ISO, SOC 2, GDPR, etc.)",
+      "Evidence Collection & Audit Readiness",
+      "Compliance Reporting & Tracking"
     ],
     color: "hsl(262 83% 58%)"
   },
