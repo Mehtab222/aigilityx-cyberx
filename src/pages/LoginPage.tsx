@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Shield, Eye, EyeOff, ArrowRight, UserPlus, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,20 +15,24 @@ export default function LoginPage() {
   const [fullName, setFullName] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const { signIn, signUp, user } = useAuth();
+
+  const fromPathname =
+    (location.state as { from?: Location } | null)?.from?.pathname ?? "/dashboard";
 
   useEffect(() => {
     if (user) {
-      navigate("/dashboard");
+      navigate(fromPathname, { replace: true });
     }
-  }, [user, navigate]);
+  }, [user, navigate, fromPathname]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
       await signIn(email, password);
-      navigate("/dashboard");
+      navigate(fromPathname, { replace: true });
     } catch {
       // Error handled in signIn
     } finally {
