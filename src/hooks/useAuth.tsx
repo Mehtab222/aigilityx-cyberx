@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { createContext, useContext, useEffect, useRef, useState, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { User, Session } from "@supabase/supabase-js";
 import { toast } from "sonner";
@@ -19,11 +19,26 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+function withTimeout<T>(promise: Promise<T>, ms: number, label?: string): Promise<T> {
+  let timeoutId: number | undefined;
+
+  const timeoutPromise = new Promise<T>((_, reject) => {
+    timeoutId = window.setTimeout(() => {
+      reject(new Error(`Timeout after ${ms}ms${label ? ` (${label})` : ""}`));
+    }, ms);
+  });
+
+  return Promise.race([promise, timeoutPromise]).finally(() => {
+    if (timeoutId !== undefined) window.clearTimeout(timeoutId);
+  });
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [role, setRole] = useState<AppRole>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const isMountedRef = useRef(true);
 
   const isManager = role === "admin" || role === "ciso";
 
@@ -65,32 +80,49 @@ export function AuthProvider({ children }: { children: ReactNode }) {
    * We validate a session by calling getUser(), which checks the JWT with the backend.
    */
   const syncAuthState = async (currentSession: Session | null) => {
-    setSession(currentSession);
+    try {
+      if (!isMountedRef.current) return;
 
-    if (!currentSession) {
-      setUser(null);
-      setRole(null);
-      setIsLoading(false);
-      return;
-    }
+      setSession(currentSession);
 
-    const { data: userData, error: userError } = await supabase.auth.getUser();
-    if (userError || !userData.user) {
-      console.warn("Session validation failed; treating as signed out", userError);
+      if (!currentSession) {
+        setUser(null);
+        setRole(null);
+        return;
+      }
+
+      // Avoid getting stuck in an infinite loading state if the network hangs.
+      const { data: userData, error: userError } = await withTimeout(
+        supabase.auth.getUser(),
+        8000,
+        "auth.getUser"
+      );
+
+      if (userError || !userData.user) {
+        console.warn("Session validation failed; treating as signed out", userError);
+        setSession(null);
+        setUser(null);
+        setRole(null);
+        return;
+      }
+
+      setUser(userData.user);
+      const userRole = await withTimeout(fetchUserRole(userData.user.id), 8000, "fetchUserRole");
+      setRole(userRole);
+    } catch (err) {
+      console.error("Auth sync failed; treating as signed out", err);
+      if (!isMountedRef.current) return;
       setSession(null);
       setUser(null);
       setRole(null);
-      setIsLoading(false);
-      return;
+    } finally {
+      if (isMountedRef.current) setIsLoading(false);
     }
-
-    setUser(userData.user);
-    const userRole = await fetchUserRole(userData.user.id);
-    setRole(userRole);
-    setIsLoading(false);
   };
 
   useEffect(() => {
+    isMountedRef.current = true;
+
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, currentSession) => {
@@ -106,7 +138,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await syncAuthState(currentSession);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      isMountedRef.current = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signIn = async (email: string, password: string) => {
