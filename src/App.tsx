@@ -14,6 +14,14 @@ import AdminDashboard from "./pages/AdminDashboard";
 import UsersDashboard from "./pages/UsersDashboard";
 import AgentsDashboard from "./pages/AgentsDashboard";
 import UserManagement from "./pages/UserManagement";
+import CompliancePage from "./pages/CompliancePage";
+import RisksPage from "./pages/RisksPage";
+import ReportsPage from "./pages/ReportsPage";
+import DigitalTwinPage from "./pages/DigitalTwinPage";
+import AdvisorsPage from "./pages/AdvisorsPage";
+import PoliciesPage from "./pages/PoliciesPage";
+import PlaybooksPage from "./pages/PlaybooksPage";
+import SettingsPage from "./pages/SettingsPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -74,6 +82,70 @@ const App = () => (
               element={
                 <ProtectedRoute requiredRoles={["admin"]}>
                   <UserManagement />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/compliance"
+              element={
+                <ProtectedRoute requiredRoles={["admin", "ciso", "auditor", "executive"]}>
+                  <CompliancePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/risks"
+              element={
+                <ProtectedRoute requiredRoles={["admin", "ciso", "auditor", "executive"]}>
+                  <RisksPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/reports"
+              element={
+                <ProtectedRoute requiredRoles={["admin", "ciso", "auditor", "executive"]}>
+                  <ReportsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/simulation"
+              element={
+                <ProtectedRoute requiredRoles={["admin", "ciso"]}>
+                  <DigitalTwinPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/advisors"
+              element={
+                <ProtectedRoute requiredRoles={["admin", "ciso"]}>
+                  <AdvisorsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/policies"
+              element={
+                <ProtectedRoute requiredRoles={["admin", "ciso", "auditor"]}>
+                  <PoliciesPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/playbooks"
+              element={
+                <ProtectedRoute requiredRoles={["admin", "ciso", "soc", "operational"]}>
+                  <PlaybooksPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/settings"
+              element={
+                <ProtectedRoute requiredRoles={["admin"]}>
+                  <SettingsPage />
                 </ProtectedRoute>
               }
             />
