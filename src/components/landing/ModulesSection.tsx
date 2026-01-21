@@ -46,13 +46,13 @@ const modules = [
   },
   {
     icon: Radar,
-    title: "SOC Automation",
-    description: "Continuous monitoring, predictive threat detection, and automated incident response with AI-driven analytics.",
+    title: "vSOC Manager",
+    description: "Virtual SOC leader focused on continuous monitoring, incident management, and operational security efficiency.",
     features: [
-      "Log Ingestion & Parsing",
-      "AI-Driven Detection",
-      "Automated Playbooks",
-      "Analytics Dashboard"
+      "Real-Time Threat Monitoring",
+      "Incident Detection & Response Coordination",
+      "SOC Performance Metrics & KPIs",
+      "Automated Playbooks & Escalations"
     ],
     color: "hsl(43 96% 56%)"
   },
