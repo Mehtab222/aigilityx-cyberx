@@ -44,6 +44,9 @@ export function AuthRouteSync() {
     if (user && pathname === "/login") {
       navigate("/dashboard", { replace: true });
     }
+
+    // Prevent landing page from appearing in authenticated context when directly navigating
+    // (This is optional - users can still visit landing page while logged in)
   }, [isLoading, user, location, navigate]);
 
   return null;
