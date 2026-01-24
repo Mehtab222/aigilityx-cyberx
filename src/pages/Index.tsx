@@ -5,14 +5,13 @@ import { RecentIncidents } from "@/components/dashboard/RecentIncidents";
 import { ThreatTrendChart } from "@/components/dashboard/ThreatTrendChart";
 import { AgentStatusPanel } from "@/components/dashboard/AgentStatusPanel";
 import { QuickActions } from "@/components/dashboard/QuickActions";
+import { ConversXCore } from "@/components/dashboard/ConversXCore";
 import { MetricCard } from "@/components/ui/MetricCard";
 import {
   AlertTriangle,
   Shield,
   Clock,
-  Users,
   FileCheck,
-  Activity,
 } from "lucide-react";
 
 const Index = () => {
@@ -79,6 +78,9 @@ const Index = () => {
             <AgentStatusPanel />
           </div>
         </div>
+
+        {/* ConversX Core Section */}
+        <ConversXCore />
       </div>
     </DashboardLayout>
   );
