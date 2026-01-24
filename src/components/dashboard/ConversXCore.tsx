@@ -57,13 +57,6 @@ export function ConversXCore() {
 
   return (
     <div className="space-y-6">
-      {/* Section Header */}
-      <div>
-        <h2 className="text-2xl font-bold text-foreground">ConversX Core</h2>
-        <p className="text-muted-foreground mt-1">
-          Multi-modal conversation engine with voice, avatar, and multi-agent capabilities
-        </p>
-      </div>
 
       {/* Feature Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
