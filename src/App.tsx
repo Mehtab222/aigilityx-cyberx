@@ -22,8 +22,8 @@ import AdvisorsPage from "./pages/AdvisorsPage";
 import PoliciesPage from "./pages/PoliciesPage";
 import PlaybooksPage from "./pages/PlaybooksPage";
 import SettingsPage from "./pages/SettingsPage";
+import ConversXPage from "./pages/ConversXPage";
 import NotFound from "./pages/NotFound";
-
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -42,6 +42,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Index />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/conversx"
+              element={
+                <ProtectedRoute requiredRoles={["admin", "ciso", "soc", "operational"]}>
+                  <ConversXPage />
                 </ProtectedRoute>
               }
             />
