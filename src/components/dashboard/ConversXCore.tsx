@@ -59,13 +59,7 @@ export function ConversXCore() {
 
   return (
     <div className="space-y-6">
-      {/* CISO Advisor Chat Interface */}
-      <CISOAdvisorChat />
-
-      {/* Multi-Agent Chat Interface */}
-      <MultiAgentChat />
-
-      {/* Feature Cards Grid */}
+      {/* 1. Feature Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {features.map((feature, index) => (
           <Card
@@ -87,7 +81,10 @@ export function ConversXCore() {
         ))}
       </div>
 
-      {/* Multi-Agent Conversation Wizard */}
+      {/* 2. CISO Advisor Chat Interface */}
+      <CISOAdvisorChat />
+
+      {/* 3. Multi-Agent Conversation Wizard */}
       <Card className="bg-card border border-border">
         <CardHeader className="text-center pb-2">
           <CardTitle className="text-xl font-semibold">
@@ -143,6 +140,9 @@ export function ConversXCore() {
           </Button>
         </CardContent>
       </Card>
+
+      {/* 4. Multi-Agent Chat Interface */}
+      <MultiAgentChat />
     </div>
   );
 }
