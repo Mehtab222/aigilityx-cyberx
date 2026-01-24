@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { MessageSquare, Mic, Code } from "lucide-react";
+import { CISOAdvisorChat } from "./CISOAdvisorChat";
 
 interface Advisor {
   id: string;
@@ -57,6 +58,8 @@ export function ConversXCore() {
 
   return (
     <div className="space-y-6">
+      {/* CISO Advisor Chat Interface */}
+      <CISOAdvisorChat />
 
       {/* Feature Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
