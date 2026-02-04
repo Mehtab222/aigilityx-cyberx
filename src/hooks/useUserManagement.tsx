@@ -173,8 +173,13 @@ export function useUserManagement() {
         throw new Error(response.error.message || "Failed to create user");
       }
 
-      if (response.data?.error) {
+      // Check for application-level error in response data
+      if (response.data && !response.data.success && response.data.error) {
         throw new Error(response.data.error);
+      }
+
+      if (!response.data?.success) {
+        throw new Error("Failed to create user");
       }
 
       return response.data;
