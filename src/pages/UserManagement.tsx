@@ -19,12 +19,15 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useUserManagement, UserWithRole } from "@/hooks/useUserManagement";
+import { useUserManagement, UserWithRole, UpdateUserPayload } from "@/hooks/useUserManagement";
 import { usePermissions } from "@/hooks/usePermissions";
-import { Users, Shield, UserCog, Loader2, UserPlus } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { Users, Shield, UserCog, Loader2, UserPlus, Pencil, Trash2, Phone } from "lucide-react";
 import { format } from "date-fns";
 import { Database } from "@/integrations/supabase/types";
 import { AddUserDialog, CreateUserData } from "@/components/users/AddUserDialog";
+import { EditUserDialog, UpdateUserData } from "@/components/users/EditUserDialog";
+import { DeleteUserDialog } from "@/components/users/DeleteUserDialog";
 
 type DbAppRole = Database["public"]["Enums"]["app_role"];
 
@@ -71,9 +74,25 @@ const getInitials = (name: string | null, email: string | null) => {
 
 const UserManagement = () => {
   const [isAddUserOpen, setIsAddUserOpen] = useState(false);
-  const { users, isLoading, assignRole, createUser, isAssigning, isCreating, canManageUsers } =
-    useUserManagement();
+  const [isEditUserOpen, setIsEditUserOpen] = useState(false);
+  const [isDeleteUserOpen, setIsDeleteUserOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<UserWithRole | null>(null);
+  
+  const { 
+    users, 
+    isLoading, 
+    assignRole, 
+    createUser, 
+    updateUser,
+    deleteUser,
+    isAssigning, 
+    isCreating,
+    isUpdating,
+    isDeleting,
+    canManageUsers 
+  } = useUserManagement();
   const { isAdmin } = usePermissions();
+  const { user: currentUser } = useAuth();
 
   const handleRoleChange = (user: UserWithRole, newRole: DbAppRole) => {
     assignRole({
@@ -90,6 +109,42 @@ const UserManagement = () => {
     } catch (error) {
       // Error handled in mutation
     }
+  };
+
+  const handleEditClick = (user: UserWithRole) => {
+    setSelectedUser(user);
+    setIsEditUserOpen(true);
+  };
+
+  const handleUpdateUser = async (data: UpdateUserData) => {
+    try {
+      await updateUser(data);
+      setIsEditUserOpen(false);
+      setSelectedUser(null);
+    } catch (error) {
+      // Error handled in mutation
+    }
+  };
+
+  const handleDeleteClick = (user: UserWithRole) => {
+    setSelectedUser(user);
+    setIsDeleteUserOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!selectedUser) return;
+    try {
+      await deleteUser(selectedUser.user_id);
+      setIsDeleteUserOpen(false);
+      setSelectedUser(null);
+    } catch (error) {
+      // Error handled in mutation
+    }
+  };
+
+  // Check if user is the currently logged in admin
+  const isCurrentUser = (user: UserWithRole) => {
+    return currentUser?.id === user.user_id;
   };
 
   if (!isAdmin) {
@@ -112,12 +167,26 @@ const UserManagement = () => {
       title="User Management"
       subtitle="Manage user accounts and role assignments"
     >
-      {/* Add User Dialog */}
+      {/* Dialogs */}
       <AddUserDialog
         open={isAddUserOpen}
         onOpenChange={setIsAddUserOpen}
         onSubmit={handleCreateUser}
         isLoading={isCreating}
+      />
+      <EditUserDialog
+        open={isEditUserOpen}
+        onOpenChange={setIsEditUserOpen}
+        onSubmit={handleUpdateUser}
+        isLoading={isUpdating}
+        user={selectedUser}
+      />
+      <DeleteUserDialog
+        open={isDeleteUserOpen}
+        onOpenChange={setIsDeleteUserOpen}
+        onConfirm={handleDeleteConfirm}
+        isLoading={isDeleting}
+        user={selectedUser}
       />
 
       <div className="space-y-6 animate-fade-in">
@@ -213,9 +282,12 @@ const UserManagement = () => {
                   <TableRow>
                     <TableHead>User</TableHead>
                     <TableHead>Email</TableHead>
-                    <TableHead>Current Role</TableHead>
+                    <TableHead>Phone</TableHead>
+                    <TableHead>Role</TableHead>
+                    <TableHead>Status</TableHead>
                     <TableHead>Joined</TableHead>
                     <TableHead>Actions</TableHead>
+                    <TableHead>Edit</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -237,6 +309,16 @@ const UserManagement = () => {
                       <TableCell className="text-muted-foreground">
                         {user.email || "No email"}
                       </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {user.phone ? (
+                          <div className="flex items-center gap-1">
+                            <Phone className="w-3 h-3" />
+                            <span>{user.phone}</span>
+                          </div>
+                        ) : (
+                          <span className="text-muted-foreground/50">—</span>
+                        )}
+                      </TableCell>
                       <TableCell>
                         {user.role ? (
                           <Badge variant={getRoleBadgeVariant(user.role)}>
@@ -247,6 +329,11 @@ const UserManagement = () => {
                             No role
                           </Badge>
                         )}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={user.is_active ? "default" : "secondary"} className={user.is_active ? "bg-green-600 hover:bg-green-700" : ""}>
+                          {user.is_active ? "Active" : "Inactive"}
+                        </Badge>
                       </TableCell>
                       <TableCell className="text-muted-foreground">
                         {format(new Date(user.created_at), "MMM d, yyyy")}
@@ -272,6 +359,28 @@ const UserManagement = () => {
                             ))}
                           </SelectContent>
                         </Select>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleEditClick(user)}
+                            className="h-8 w-8 hover:bg-primary/10"
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleDeleteClick(user)}
+                            disabled={isCurrentUser(user)}
+                            className="h-8 w-8 hover:bg-destructive/10 hover:text-destructive disabled:opacity-50"
+                            title={isCurrentUser(user) ? "Cannot delete yourself" : "Delete user"}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}

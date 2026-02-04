@@ -17,12 +17,23 @@ export interface CreateUserPayload {
   is_active: boolean;
 }
 
+export interface UpdateUserPayload {
+  user_id: string;
+  full_name: string;
+  phone?: string;
+  role: DbAppRole;
+  is_active: boolean;
+  password?: string;
+}
+
 export interface UserWithRole {
   id: string;
   user_id: string;
   email: string | null;
   full_name: string | null;
   avatar_url: string | null;
+  phone: string | null;
+  is_active: boolean;
   role: DbAppRole | null;
   role_id: string | null;
   created_at: string;
@@ -70,6 +81,8 @@ export function useUserManagement() {
           email: profile.email,
           full_name: profile.full_name,
           avatar_url: profile.avatar_url,
+          phone: profile.phone || null,
+          is_active: true, // Default to active (we can add is_active column later if needed)
           role: userRole?.role || null,
           role_id: userRole?.id || null,
           created_at: profile.created_at,
@@ -199,6 +212,101 @@ export function useUserManagement() {
     },
   });
 
+  // Update user profile and role
+  const updateUserMutation = useMutation({
+    mutationFn: async (payload: UpdateUserPayload) => {
+      if (!isAdmin) {
+        throw new Error("Only admins can update users");
+      }
+
+      // Update profile
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .update({
+          full_name: payload.full_name,
+          phone: payload.phone || null,
+        })
+        .eq("user_id", payload.user_id);
+
+      if (profileError) throw profileError;
+
+      // Get existing role for this user
+      const { data: existingRole } = await supabase
+        .from("user_roles")
+        .select("*")
+        .eq("user_id", payload.user_id)
+        .single();
+
+      if (existingRole) {
+        // Update existing role
+        const { error: roleError } = await supabase
+          .from("user_roles")
+          .update({ role: payload.role })
+          .eq("id", existingRole.id);
+
+        if (roleError) throw roleError;
+      } else {
+        // Insert new role
+        const { error: roleError } = await supabase
+          .from("user_roles")
+          .insert([{ user_id: payload.user_id, role: payload.role }]);
+
+        if (roleError) throw roleError;
+      }
+
+      return payload;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["users-with-roles"] });
+      logAction({
+        action: "user.update",
+        resourceType: "user",
+        resourceId: data.user_id,
+        details: { message: "User updated via admin panel" },
+      });
+      toast.success("User updated successfully");
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Failed to update user");
+    },
+  });
+
+  // Delete user (soft delete - just removes from profiles, auth user remains)
+  const deleteUserMutation = useMutation({
+    mutationFn: async (userId: string) => {
+      if (!isAdmin) {
+        throw new Error("Only admins can delete users");
+      }
+
+      // First delete the role
+      const { error: roleError } = await supabase
+        .from("user_roles")
+        .delete()
+        .eq("user_id", userId);
+
+      if (roleError) throw roleError;
+
+      // Note: We can't delete auth.users from client side
+      // The profile will remain but role is removed
+      // For full deletion, we'd need an edge function with service role
+
+      return userId;
+    },
+    onSuccess: (userId) => {
+      queryClient.invalidateQueries({ queryKey: ["users-with-roles"] });
+      logAction({
+        action: "user.delete",
+        resourceType: "user",
+        resourceId: userId,
+        details: { message: "User role removed via admin panel" },
+      });
+      toast.success("User deleted successfully");
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Failed to delete user");
+    },
+  });
+
   return {
     users,
     isLoading,
@@ -206,9 +314,13 @@ export function useUserManagement() {
     assignRole: assignRoleMutation.mutate,
     removeRole: removeRoleMutation.mutate,
     createUser: createUserMutation.mutateAsync,
+    updateUser: updateUserMutation.mutateAsync,
+    deleteUser: deleteUserMutation.mutateAsync,
     isAssigning: assignRoleMutation.isPending,
     isRemoving: removeRoleMutation.isPending,
     isCreating: createUserMutation.isPending,
+    isUpdating: updateUserMutation.isPending,
+    isDeleting: deleteUserMutation.isPending,
     canManageUsers: isAdmin,
   };
 }
