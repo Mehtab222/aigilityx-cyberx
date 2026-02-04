@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -20,9 +21,10 @@ import {
 } from "@/components/ui/table";
 import { useUserManagement, UserWithRole } from "@/hooks/useUserManagement";
 import { usePermissions } from "@/hooks/usePermissions";
-import { Users, Shield, UserCog, Loader2 } from "lucide-react";
+import { Users, Shield, UserCog, Loader2, UserPlus } from "lucide-react";
 import { format } from "date-fns";
 import { Database } from "@/integrations/supabase/types";
+import { AddUserDialog, CreateUserData } from "@/components/users/AddUserDialog";
 
 type DbAppRole = Database["public"]["Enums"]["app_role"];
 
@@ -68,7 +70,8 @@ const getInitials = (name: string | null, email: string | null) => {
 };
 
 const UserManagement = () => {
-  const { users, isLoading, assignRole, isAssigning, canManageUsers } =
+  const [isAddUserOpen, setIsAddUserOpen] = useState(false);
+  const { users, isLoading, assignRole, createUser, isAssigning, isCreating, canManageUsers } =
     useUserManagement();
   const { isAdmin } = usePermissions();
 
@@ -78,6 +81,15 @@ const UserManagement = () => {
       role: newRole,
       existingRoleId: user.role_id,
     });
+  };
+
+  const handleCreateUser = async (data: CreateUserData) => {
+    try {
+      await createUser(data);
+      setIsAddUserOpen(false);
+    } catch (error) {
+      // Error handled in mutation
+    }
   };
 
   if (!isAdmin) {
@@ -100,8 +112,22 @@ const UserManagement = () => {
       title="User Management"
       subtitle="Manage user accounts and role assignments"
     >
+      {/* Add User Dialog */}
+      <AddUserDialog
+        open={isAddUserOpen}
+        onOpenChange={setIsAddUserOpen}
+        onSubmit={handleCreateUser}
+        isLoading={isCreating}
+      />
+
       <div className="space-y-6 animate-fade-in">
-        {/* Stats Cards */}
+        {/* Add User Button */}
+        <div className="flex justify-end">
+          <Button onClick={() => setIsAddUserOpen(true)} className="gap-2">
+            <UserPlus className="w-4 h-4" />
+            Add User
+          </Button>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card className="cyber-card">
             <CardContent className="pt-6">

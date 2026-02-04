@@ -8,6 +8,15 @@ import { Database } from "@/integrations/supabase/types";
 
 type DbAppRole = Database["public"]["Enums"]["app_role"];
 
+export interface CreateUserPayload {
+  email: string;
+  password: string;
+  full_name: string;
+  phone?: string;
+  role: DbAppRole;
+  is_active: boolean;
+}
+
 export interface UserWithRole {
   id: string;
   user_id: string;
@@ -144,14 +153,57 @@ export function useUserManagement() {
     },
   });
 
+  // Create new user
+  const createUserMutation = useMutation({
+    mutationFn: async (payload: CreateUserPayload) => {
+      if (!isAdmin) {
+        throw new Error("Only admins can create users");
+      }
+
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (!sessionData.session) {
+        throw new Error("No active session");
+      }
+
+      const response = await supabase.functions.invoke("create-user", {
+        body: payload,
+      });
+
+      if (response.error) {
+        throw new Error(response.error.message || "Failed to create user");
+      }
+
+      if (response.data?.error) {
+        throw new Error(response.data.error);
+      }
+
+      return response.data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["users-with-roles"] });
+      logAction({
+        action: "user.create",
+        resourceType: "user",
+        resourceId: data.user_id,
+        details: { message: "User created via admin panel" },
+      });
+      toast.success("User created successfully");
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Failed to create user");
+    },
+  });
+
   return {
     users,
     isLoading,
     error,
     assignRole: assignRoleMutation.mutate,
     removeRole: removeRoleMutation.mutate,
+    createUser: createUserMutation.mutateAsync,
     isAssigning: assignRoleMutation.isPending,
     isRemoving: removeRoleMutation.isPending,
+    isCreating: createUserMutation.isPending,
     canManageUsers: isAdmin,
   };
 }
