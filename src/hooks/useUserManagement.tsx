@@ -271,24 +271,34 @@ export function useUserManagement() {
     },
   });
 
-  // Delete user (soft delete - just removes from profiles, auth user remains)
+  // Delete user completely (auth + profile + role via edge function)
   const deleteUserMutation = useMutation({
     mutationFn: async (userId: string) => {
       if (!isAdmin) {
         throw new Error("Only admins can delete users");
       }
 
-      // First delete the role
-      const { error: roleError } = await supabase
-        .from("user_roles")
-        .delete()
-        .eq("user_id", userId);
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (!sessionData.session) {
+        throw new Error("No active session");
+      }
 
-      if (roleError) throw roleError;
+      const response = await supabase.functions.invoke("delete-user", {
+        body: { user_id: userId },
+      });
 
-      // Note: We can't delete auth.users from client side
-      // The profile will remain but role is removed
-      // For full deletion, we'd need an edge function with service role
+      if (response.error) {
+        throw new Error(response.error.message || "Failed to delete user");
+      }
+
+      // Check for application-level error in response data
+      if (response.data && !response.data.success && response.data.error) {
+        throw new Error(response.data.error);
+      }
+
+      if (!response.data?.success) {
+        throw new Error("Failed to delete user");
+      }
 
       return userId;
     },
@@ -298,7 +308,7 @@ export function useUserManagement() {
         action: "user.delete",
         resourceType: "user",
         resourceId: userId,
-        details: { message: "User role removed via admin panel" },
+        details: { message: "User fully deleted via admin panel" },
       });
       toast.success("User deleted successfully");
     },
