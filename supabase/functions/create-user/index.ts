@@ -95,9 +95,10 @@ Deno.serve(async (req) => {
 
     if (authError) {
       console.error("Auth error:", authError);
+      // Return 200 with error in body so client can read it
       return new Response(
-        JSON.stringify({ error: authError.message }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ success: false, error: authError.message }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
