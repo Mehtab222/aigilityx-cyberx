@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      advisors: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          model_ref: string | null
+          name: string
+          role_template: string | null
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          model_ref?: string | null
+          name: string
+          role_template?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          model_ref?: string | null
+          name?: string
+          role_template?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       agent_templates: {
         Row: {
           allowed_task_categories: string[]
@@ -115,6 +148,202 @@ export type Database = {
           },
         ]
       }
+      ai_agent_status: {
+        Row: {
+          agent_name: string
+          confidence: number | null
+          created_at: string
+          id: string
+          recommendation: string | null
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          agent_name: string
+          confidence?: number | null
+          created_at?: string
+          id?: string
+          recommendation?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          agent_name?: string
+          confidence?: number | null
+          created_at?: string
+          id?: string
+          recommendation?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      alerts: {
+        Row: {
+          created_at: string
+          id: string
+          incident_id: string | null
+          severity: string | null
+          source: string | null
+          status: string | null
+          summary: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          incident_id?: string | null
+          severity?: string | null
+          source?: string | null
+          status?: string | null
+          summary: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          incident_id?: string | null
+          severity?: string | null
+          source?: string | null
+          status?: string | null
+          summary?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "alerts_incident_id_fkey"
+            columns: ["incident_id"]
+            isOneToOne: false
+            referencedRelation: "incidents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      asset_controls: {
+        Row: {
+          asset_id: string
+          control_id: string
+          id: string
+        }
+        Insert: {
+          asset_id: string
+          control_id: string
+          id?: string
+        }
+        Update: {
+          asset_id?: string
+          control_id?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "asset_controls_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "assets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "asset_controls_control_id_fkey"
+            columns: ["control_id"]
+            isOneToOne: false
+            referencedRelation: "controls"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      assets: {
+        Row: {
+          asset_name: string
+          asset_type: string | null
+          created_at: string
+          criticality_level: string | null
+          data_classification: string | null
+          id: string
+          organization_id: string | null
+          owner_user_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          asset_name: string
+          asset_type?: string | null
+          created_at?: string
+          criticality_level?: string | null
+          data_classification?: string | null
+          id?: string
+          organization_id?: string | null
+          owner_user_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          asset_name?: string
+          asset_type?: string | null
+          created_at?: string
+          criticality_level?: string | null
+          data_classification?: string | null
+          id?: string
+          organization_id?: string | null
+          owner_user_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assets_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      audit_findings: {
+        Row: {
+          assessment_id: string | null
+          control_id: string | null
+          created_at: string
+          finding_description: string
+          id: string
+          remediation_notes: string | null
+          remediation_status: string | null
+          severity: string | null
+          updated_at: string
+        }
+        Insert: {
+          assessment_id?: string | null
+          control_id?: string | null
+          created_at?: string
+          finding_description: string
+          id?: string
+          remediation_notes?: string | null
+          remediation_status?: string | null
+          severity?: string | null
+          updated_at?: string
+        }
+        Update: {
+          assessment_id?: string | null
+          control_id?: string | null
+          created_at?: string
+          finding_description?: string
+          id?: string
+          remediation_notes?: string | null
+          remediation_status?: string | null
+          severity?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audit_findings_assessment_id_fkey"
+            columns: ["assessment_id"]
+            isOneToOne: false
+            referencedRelation: "compliance_assessments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "audit_findings_control_id_fkey"
+            columns: ["control_id"]
+            isOneToOne: false
+            referencedRelation: "controls"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_logs: {
         Row: {
           action: string
@@ -151,36 +380,643 @@ export type Database = {
         }
         Relationships: []
       }
+      chats: {
+        Row: {
+          advisor_ids: Json | null
+          conversation_type: string | null
+          created_at: string
+          id: string
+          message: string | null
+          metadata: Json | null
+          response: string | null
+          user_id: string
+        }
+        Insert: {
+          advisor_ids?: Json | null
+          conversation_type?: string | null
+          created_at?: string
+          id?: string
+          message?: string | null
+          metadata?: Json | null
+          response?: string | null
+          user_id: string
+        }
+        Update: {
+          advisor_ids?: Json | null
+          conversation_type?: string | null
+          created_at?: string
+          id?: string
+          message?: string | null
+          metadata?: Json | null
+          response?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      compliance_assessments: {
+        Row: {
+          assessment_date: string | null
+          assessment_status: string | null
+          assessor_user_id: string | null
+          created_at: string
+          framework_id: string | null
+          id: string
+          notes: string | null
+          organization_id: string | null
+          overall_score: number | null
+          updated_at: string
+        }
+        Insert: {
+          assessment_date?: string | null
+          assessment_status?: string | null
+          assessor_user_id?: string | null
+          created_at?: string
+          framework_id?: string | null
+          id?: string
+          notes?: string | null
+          organization_id?: string | null
+          overall_score?: number | null
+          updated_at?: string
+        }
+        Update: {
+          assessment_date?: string | null
+          assessment_status?: string | null
+          assessor_user_id?: string | null
+          created_at?: string
+          framework_id?: string | null
+          id?: string
+          notes?: string | null
+          organization_id?: string | null
+          overall_score?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "compliance_assessments_framework_id_fkey"
+            columns: ["framework_id"]
+            isOneToOne: false
+            referencedRelation: "compliance_frameworks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "compliance_assessments_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      compliance_frameworks: {
+        Row: {
+          created_at: string
+          description: string | null
+          framework_name: string
+          id: string
+          regulator_body: string | null
+          version: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          framework_name: string
+          id?: string
+          regulator_body?: string | null
+          version?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          framework_name?: string
+          id?: string
+          regulator_body?: string | null
+          version?: string | null
+        }
+        Relationships: []
+      }
+      compliance_status: {
+        Row: {
+          control_id: string
+          created_at: string
+          id: string
+          last_checked: string | null
+          notes: string | null
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          control_id: string
+          created_at?: string
+          id?: string
+          last_checked?: string | null
+          notes?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          control_id?: string
+          created_at?: string
+          id?: string
+          last_checked?: string | null
+          notes?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "compliance_status_control_id_fkey"
+            columns: ["control_id"]
+            isOneToOne: false
+            referencedRelation: "controls"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      controls: {
+        Row: {
+          control_code: string | null
+          control_name: string
+          control_status: string | null
+          control_type: string | null
+          created_at: string
+          description: string | null
+          framework: string | null
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          control_code?: string | null
+          control_name: string
+          control_status?: string | null
+          control_type?: string | null
+          created_at?: string
+          description?: string | null
+          framework?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          control_code?: string | null
+          control_name?: string
+          control_status?: string | null
+          control_type?: string | null
+          created_at?: string
+          description?: string | null
+          framework?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      evidence: {
+        Row: {
+          control_id: string | null
+          created_at: string
+          description: string | null
+          evidence_type: string | null
+          file_url: string | null
+          id: string
+          name: string
+          storage_location: string | null
+          uploaded_at: string | null
+          uploaded_by: string | null
+        }
+        Insert: {
+          control_id?: string | null
+          created_at?: string
+          description?: string | null
+          evidence_type?: string | null
+          file_url?: string | null
+          id?: string
+          name: string
+          storage_location?: string | null
+          uploaded_at?: string | null
+          uploaded_by?: string | null
+        }
+        Update: {
+          control_id?: string | null
+          created_at?: string
+          description?: string | null
+          evidence_type?: string | null
+          file_url?: string | null
+          id?: string
+          name?: string
+          storage_location?: string | null
+          uploaded_at?: string | null
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evidence_control_id_fkey"
+            columns: ["control_id"]
+            isOneToOne: false
+            referencedRelation: "controls"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      framework_controls: {
+        Row: {
+          control_id: string
+          framework_id: string
+          id: string
+        }
+        Insert: {
+          control_id: string
+          framework_id: string
+          id?: string
+        }
+        Update: {
+          control_id?: string
+          framework_id?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "framework_controls_control_id_fkey"
+            columns: ["control_id"]
+            isOneToOne: false
+            referencedRelation: "controls"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "framework_controls_framework_id_fkey"
+            columns: ["framework_id"]
+            isOneToOne: false
+            referencedRelation: "compliance_frameworks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      incidents: {
+        Row: {
+          assigned_to: string | null
+          created_at: string
+          description: string | null
+          detected_at: string | null
+          id: string
+          organization_id: string | null
+          resolved_at: string | null
+          risk_id: string | null
+          severity: string | null
+          status: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          created_at?: string
+          description?: string | null
+          detected_at?: string | null
+          id?: string
+          organization_id?: string | null
+          resolved_at?: string | null
+          risk_id?: string | null
+          severity?: string | null
+          status?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          created_at?: string
+          description?: string | null
+          detected_at?: string | null
+          id?: string
+          organization_id?: string | null
+          resolved_at?: string | null
+          risk_id?: string | null
+          severity?: string | null
+          status?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "incidents_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "incidents_risk_id_fkey"
+            columns: ["risk_id"]
+            isOneToOne: false
+            referencedRelation: "risks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organizations: {
+        Row: {
+          country: string | null
+          created_at: string
+          id: string
+          industry: string | null
+          name: string
+          organization_type: string | null
+          risk_appetite_level: string | null
+          updated_at: string
+        }
+        Insert: {
+          country?: string | null
+          created_at?: string
+          id?: string
+          industry?: string | null
+          name: string
+          organization_type?: string | null
+          risk_appetite_level?: string | null
+          updated_at?: string
+        }
+        Update: {
+          country?: string | null
+          created_at?: string
+          id?: string
+          industry?: string | null
+          name?: string
+          organization_type?: string | null
+          risk_appetite_level?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      policies: {
+        Row: {
+          approval_status: string | null
+          approved_by_user_id: string | null
+          content: string | null
+          created_at: string
+          created_by: string | null
+          effective_date: string | null
+          id: string
+          organization_id: string | null
+          policy_name: string
+          policy_type: string | null
+          updated_at: string
+          version: string | null
+        }
+        Insert: {
+          approval_status?: string | null
+          approved_by_user_id?: string | null
+          content?: string | null
+          created_at?: string
+          created_by?: string | null
+          effective_date?: string | null
+          id?: string
+          organization_id?: string | null
+          policy_name: string
+          policy_type?: string | null
+          updated_at?: string
+          version?: string | null
+        }
+        Update: {
+          approval_status?: string | null
+          approved_by_user_id?: string | null
+          content?: string | null
+          created_at?: string
+          created_by?: string | null
+          effective_date?: string | null
+          id?: string
+          organization_id?: string | null
+          policy_name?: string
+          policy_type?: string | null
+          updated_at?: string
+          version?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "policies_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
           created_at: string
+          department: string | null
           email: string | null
           full_name: string | null
           id: string
+          language: string | null
+          organization_id: string | null
           phone: string | null
+          role_title: string | null
+          status: string | null
+          theme: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
           avatar_url?: string | null
           created_at?: string
+          department?: string | null
           email?: string | null
           full_name?: string | null
           id?: string
+          language?: string | null
+          organization_id?: string | null
           phone?: string | null
+          role_title?: string | null
+          status?: string | null
+          theme?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
           avatar_url?: string | null
           created_at?: string
+          department?: string | null
           email?: string | null
           full_name?: string | null
           id?: string
+          language?: string | null
+          organization_id?: string | null
           phone?: string | null
+          role_title?: string | null
+          status?: string | null
+          theme?: string | null
           updated_at?: string
           user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      risk_controls: {
+        Row: {
+          control_id: string
+          id: string
+          risk_id: string
+        }
+        Insert: {
+          control_id: string
+          id?: string
+          risk_id: string
+        }
+        Update: {
+          control_id?: string
+          id?: string
+          risk_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "risk_controls_control_id_fkey"
+            columns: ["control_id"]
+            isOneToOne: false
+            referencedRelation: "controls"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "risk_controls_risk_id_fkey"
+            columns: ["risk_id"]
+            isOneToOne: false
+            referencedRelation: "risks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      risk_treatments: {
+        Row: {
+          action_description: string | null
+          created_at: string
+          id: string
+          risk_id: string
+          status: string | null
+          target_date: string | null
+          treatment_type: string
+          updated_at: string
+        }
+        Insert: {
+          action_description?: string | null
+          created_at?: string
+          id?: string
+          risk_id: string
+          status?: string | null
+          target_date?: string | null
+          treatment_type: string
+          updated_at?: string
+        }
+        Update: {
+          action_description?: string | null
+          created_at?: string
+          id?: string
+          risk_id?: string
+          status?: string | null
+          target_date?: string | null
+          treatment_type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "risk_treatments_risk_id_fkey"
+            columns: ["risk_id"]
+            isOneToOne: false
+            referencedRelation: "risks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      risks: {
+        Row: {
+          asset_id: string | null
+          created_at: string
+          description: string | null
+          id: string
+          impact: string | null
+          impact_score: number | null
+          likelihood: string | null
+          likelihood_score: number | null
+          organization_id: string | null
+          risk_owner_user_id: string | null
+          risk_score: number | null
+          risk_title: string
+          status: string | null
+          threat_description: string | null
+          updated_at: string
+          vulnerability_description: string | null
+        }
+        Insert: {
+          asset_id?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          impact?: string | null
+          impact_score?: number | null
+          likelihood?: string | null
+          likelihood_score?: number | null
+          organization_id?: string | null
+          risk_owner_user_id?: string | null
+          risk_score?: number | null
+          risk_title: string
+          status?: string | null
+          threat_description?: string | null
+          updated_at?: string
+          vulnerability_description?: string | null
+        }
+        Update: {
+          asset_id?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          impact?: string | null
+          impact_score?: number | null
+          likelihood?: string | null
+          likelihood_score?: number | null
+          organization_id?: string | null
+          risk_owner_user_id?: string | null
+          risk_score?: number | null
+          risk_title?: string
+          status?: string | null
+          threat_description?: string | null
+          updated_at?: string
+          vulnerability_description?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "risks_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "assets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "risks_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      roles: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          role_name: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          role_name: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          role_name?: string
         }
         Relationships: []
       }
